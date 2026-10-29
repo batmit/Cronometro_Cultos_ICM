@@ -122,6 +122,12 @@
             padding: 32px 72px;
         }
         .versiculo { margin: 0; }
+        .mensagem-oracao {
+            margin: 0;
+            font-size: clamp(26px, 3.5vw, 40px);
+            line-height: 1.4;
+            color: var(--azul-escuro);
+        }
         .versiculo p {
             margin: 0 0 18px;
             font-size: clamp(26px, 3.5vw, 40px);
@@ -195,33 +201,36 @@
     <script src="versiculos.js"></script>
     <script src="painel.js"></script>
     <script>
-        function atualizarCronometro() {
+        const duracaoCongelamento = 30 * 60 * 1000;
+        const antecedenciaOracao = 5 * 60 * 1000;
 
-            // Horário atual
-            const agora = new Date();
-
-            // Define o horário de destino conforme o dia da semana.
-            const diaDaSemana = agora.getDay();
-            const destino = new Date(agora);
-
-            if (diaDaSemana === 0) {
-                // Domingo: após o culto das 10h, conta até o das 19h.
-                destino.setHours(10, 0, 0, 0);
-                if (agora > destino) {
-                    destino.setHours(19, 0, 0, 0);
+        function obterDestino(agora) {
+            // Inclui o dia anterior para preservar o congelamento ao atravessar a meia-noite.
+            for (let deslocamento = -1; deslocamento <= 1; deslocamento++) {
+                const dia = new Date(agora);
+                dia.setDate(dia.getDate() + deslocamento);
+                const horarios = dia.getDay() === 0 ? [[10, 0], [19, 0]]
+                    : dia.getDay() === 6 ? [[19, 0]] : [[19, 30]];
+                for (const [hora, minuto] of horarios) {
+                    const destino = new Date(dia);
+                    destino.setHours(hora, minuto, 0, 0);
+                    if (agora.getTime() < destino.getTime() + duracaoCongelamento) {
+                        return destino;
+                    }
                 }
-            } else if (diaDaSemana === 6) {
-                destino.setHours(19, 0, 0, 0);
-            } else {
-                destino.setHours(19, 30, 0, 0);
             }
+        }
+
+        function atualizarCronometro() {
+            const agora = new Date();
+            const destino = obterDestino(agora);
 
             // Diferença em milissegundos
             const diferenca = destino - agora;
+            atualizarMomentoDeOracao(diferenca <= antecedenciaOracao);
 
             if (diferenca <= 0) {
-                document.getElementById("cronometro").innerHTML =
-                    "Tempo encerrado!";
+                document.getElementById("cronometro").textContent = "00:00:00";
                 return;
             }
 

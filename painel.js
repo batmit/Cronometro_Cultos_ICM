@@ -11,6 +11,26 @@ const botaoProximo = document.getElementById("proximo-conteudo");
 const historico = [];
 let posicaoHistorico = -1;
 let intervaloConteudo;
+let momentoDeOracao = false;
+
+function atualizarMomentoDeOracao(ativo) {
+    if (momentoDeOracao === ativo) return;
+    momentoDeOracao = ativo;
+    document.querySelector(".barra-titulo").hidden = ativo;
+    botaoAnterior.hidden = ativo;
+    botaoProximo.hidden = ativo;
+    if (ativo) {
+        clearInterval(intervaloConteudo);
+        const mensagem = document.createElement("p");
+        mensagem.className = "mensagem-oracao";
+        mensagem.textContent = "Momento de Silêncio de de Oração";
+        conteudoCentral.replaceChildren(mensagem);
+    } else {
+        if (posicaoHistorico >= 0) restaurarConteudo();
+        else avancarConteudo();
+        reiniciarIntervalo();
+    }
+}
 
 function atualizarSetas() {
     botaoAnterior.disabled = posicaoHistorico <= 0;
@@ -27,6 +47,7 @@ function restaurarConteudo() {
 }
 
 function avancarConteudo() {
+    if (momentoDeOracao) return;
     if (posicaoHistorico < historico.length - 1) {
         posicaoHistorico++;
         restaurarConteudo();
@@ -48,11 +69,12 @@ function avancarConteudo() {
 
 function reiniciarIntervalo() {
     clearInterval(intervaloConteudo);
+    if (momentoDeOracao) return;
     intervaloConteudo = setInterval(avancarConteudo, 15 * 1000);
 }
 
 botaoAnterior.addEventListener("click", () => {
-    if (posicaoHistorico <= 0) return;
+    if (momentoDeOracao || posicaoHistorico <= 0) return;
     posicaoHistorico--;
     restaurarConteudo();
     reiniciarIntervalo();
