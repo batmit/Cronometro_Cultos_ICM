@@ -16,27 +16,40 @@
         }
         * { box-sizing: border-box; }
         body {
+            display: grid;
+            grid-template-rows: auto minmax(min-content, 1fr);
+            justify-items: center;
+            gap: 20px;
             font-family: "Segoe UI", Arial, sans-serif;
             text-align: center;
             margin: 0;
             padding: 16px 12px;
             border-top: 4px solid var(--vermelho-icm);
             background: var(--fundo);
+            background-image: url("https://www.igrejacristamaranata.org.br/wp-content/uploads/2024/11/imagem-2024-11-26-114627141.png");
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            min-height: 100svh;
             color: var(--texto);
         }
         .cabecalho {
+            width: 100%;
             max-width: 960px;
             margin: 0 auto;
-            padding: 0 12px 12px;
-            border-bottom: 1px solid var(--borda);
+            padding: 12px;
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            background: var(--branco);
         }
-        .nome-igreja {
-            margin: 0 0 8px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: var(--vermelho-icm);
+        .logo-igreja {
+            display: block;
+            width: 200px;
+            max-width: 70%;
+            height: auto;
+            margin: 0 auto 12px;
         }
         h1 {
             margin: 0 0 4px;
@@ -52,8 +65,10 @@
             color: var(--vermelho-icm);
         }
         .painel-central {
-            max-width: 920px;
-            margin: 20px auto;
+            width: 100%;
+            max-width: 1160px;
+            align-self: center;
+            margin: 0 auto;
             border: 1px solid var(--borda);
             border-top: 4px solid var(--vermelho-icm);
             border-radius: 10px;
@@ -61,13 +76,20 @@
             box-shadow: 0 4px 18px rgba(25, 42, 61, 0.04);
             overflow: hidden;
         }
-        #tipo-conteudo {
+        .barra-titulo {
             margin: 0;
             padding: 12px 20px;
             background: var(--azul-escuro);
             color: var(--branco);
             font-size: 18px;
             font-weight: 600;
+            overflow: hidden;
+        }
+        #tipo-conteudo {
+            display: block;
+            width: max-content;
+            max-width: 100%;
+            margin: 0 auto;
         }
         .painel-corpo { position: relative; }
         .seta-painel {
@@ -94,22 +116,24 @@
         #conteudo-central {
             display: grid;
             align-items: center;
-            min-height: 290px;
-            padding: 24px 64px;
+            min-height: 400px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 32px 72px;
         }
         .versiculo { margin: 0; }
         .versiculo p {
             margin: 0 0 18px;
-            font-size: clamp(20px, 2.5vw, 28px);
-            line-height: 1.5;
+            font-size: clamp(26px, 3.5vw, 40px);
+            line-height: 1.4;
+            overflow-wrap: break-word;
             color: var(--azul-escuro);
         }
         .versiculo strong {
             display: block;
             color: var(--vermelho-icm);
-            font-size: 18px;
+            font-size: 22px;
         }
-        .versiculo small { display: block; margin-top: 6px; font-size: 12px; }
         .noticia-link {
             display: block;
             text-align: left;
@@ -125,7 +149,7 @@
         .noticia-imagem {
             display: block;
             width: 100%;
-            height: 230px;
+            height: 300px;
             object-fit: contain;
             border-radius: 6px;
             background: var(--fundo);
@@ -139,25 +163,6 @@
         }
         .ler-noticia { color: var(--vermelho-icm); font-size: 14px; font-weight: 600; }
         .noticia-link:hover h3 { color: var(--vermelho-icm); }
-        .painel-rodape {
-            padding: 12px 20px;
-            border-top: 1px solid var(--borda);
-            font-size: 12px;
-        }
-        #status-noticias { margin: 0 0 10px; line-height: 1.4; }
-        #atualizar-noticias {
-            padding: 6px 10px;
-            margin: 0 8px 6px 0;
-            border: 1px solid var(--vermelho-icm);
-            border-radius: 6px;
-            color: var(--branco);
-            background: var(--vermelho-icm);
-            cursor: pointer;
-            font: inherit;
-        }
-        #atualizar-noticias:hover:not(:disabled) { background: var(--vermelho-escuro); }
-        #atualizar-noticias:disabled { opacity: 0.6; cursor: wait; }
-        .painel-rodape a { color: var(--vermelho-icm); text-underline-offset: 3px; }
         .painel-central a:focus-visible, .painel-central button:focus-visible {
             outline: 3px solid var(--vermelho-icm);
             outline-offset: 3px;
@@ -173,23 +178,18 @@
 </head>
 <body>
     <header class="cabecalho">
-        <p class="nome-igreja">Igreja Cristã Maranata</p>
+        <img class="logo-igreja" src="https://www.igrejacristamaranata.org.br/wp-content/uploads/2024/06/logo-icm.svg" alt="Igreja Cristã Maranata">
         <h1>Nosso culto começa em</h1>
         <div id="cronometro">00:00:00</div>
     </header>
 
     <section class="painel-central" aria-labelledby="tipo-conteudo">
-        <h2 id="tipo-conteudo">Palavra de Deus</h2>
+        <h2 class="barra-titulo"><span id="tipo-conteudo">Palavra de Deus</span></h2>
         <div class="painel-corpo">
             <button id="conteudo-anterior" class="seta-painel" type="button" aria-label="Conteúdo anterior" aria-controls="conteudo-central" title="Conteúdo anterior" disabled>‹</button>
             <div id="conteudo-central" aria-live="polite" aria-atomic="true"></div>
             <button id="proximo-conteudo" class="seta-painel" type="button" aria-label="Próximo conteúdo" aria-controls="conteudo-central" title="Próximo conteúdo">›</button>
         </div>
-        <footer class="painel-rodape">
-            <p id="status-noticias" role="status">Carregando notícias…</p>
-            <button id="atualizar-noticias" type="button">Atualizar notícias</button>
-            <a href="https://www.igrejacristamaranata.org.br/" target="_blank" rel="noopener noreferrer">Site oficial ↗</a>
-        </footer>
     </section>
 
     <script src="versiculos.js"></script>

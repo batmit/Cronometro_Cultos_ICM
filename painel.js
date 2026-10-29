@@ -1,8 +1,7 @@
 const versiculos = window.versiculosBiblicos || [];
 const conteudoCentral = document.getElementById("conteudo-central");
 const tipoConteudo = document.getElementById("tipo-conteudo");
-const statusNoticias = document.getElementById("status-noticias");
-const botaoNoticias = document.getElementById("atualizar-noticias");
+let carregandoNoticias = false;
 let noticias = [];
 let indiceVersiculo = 0;
 let indiceNoticia = 0;
@@ -49,7 +48,7 @@ function avancarConteudo() {
 
 function reiniciarIntervalo() {
     clearInterval(intervaloConteudo);
-    intervaloConteudo = setInterval(avancarConteudo, 60 * 1000);
+    intervaloConteudo = setInterval(avancarConteudo, 15 * 1000);
 }
 
 botaoAnterior.addEventListener("click", () => {
@@ -73,9 +72,7 @@ function mostrarVersiculo() {
     const rodape = document.createElement("footer");
     const referencia = document.createElement("strong");
     referencia.textContent = versiculo.referencia;
-    const traducao = document.createElement("small");
-    traducao.textContent = versiculo.traducao;
-    rodape.append(referencia, traducao);
+    rodape.append(referencia);
     citacao.append(texto, rodape);
     tipoConteudo.textContent = "Palavra de Deus";
     conteudoCentral.replaceChildren(citacao);
@@ -152,9 +149,8 @@ function urlOficial(endereco) {
 }
 
 async function carregarNoticias() {
-    if (botaoNoticias.disabled) return;
-    botaoNoticias.disabled = true;
-    statusNoticias.textContent = "Atualizando notícias…";
+    if (carregandoNoticias) return;
+    carregandoNoticias = true;
     const controlador = new AbortController();
     const limite = setTimeout(() => controlador.abort(), 15000);
     try {
@@ -179,20 +175,14 @@ async function carregarNoticias() {
                 descricaoImagem: midia?.alt_text || ""
             }];
         });
-        statusNoticias.textContent = noticias.length
-            ? "Versículos e notícias alternam a cada minuto."
-            : "Sem notícias disponíveis. Os versículos continuam a cada minuto.";
     } catch {
-        statusNoticias.textContent = noticias.length
-            ? "Não foi possível atualizar as notícias. Exibindo as últimas carregadas."
-            : "Notícias indisponíveis. Os versículos continuam a cada minuto.";
+        // Mantém as notícias anteriores; sem elas, o painel continua com os versículos.
     } finally {
         clearTimeout(limite);
-        botaoNoticias.disabled = false;
+        carregandoNoticias = false;
     }
 }
 
-botaoNoticias.addEventListener("click", carregarNoticias);
 avancarConteudo();
 carregarNoticias();
 reiniciarIntervalo();
