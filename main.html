@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cronômetro para Culto ICM</title>
+    <style>
+        :root {
+            --vermelho-icm: #bb1626;
+            --vermelho-escuro: #941220;
+            --azul-escuro: #192a3d;
+            --texto: #3a4f66;
+            --fundo: #fff5f5;
+            --borda: #ead7da;
+            --branco: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 16px 12px;
+            border-top: 4px solid var(--vermelho-icm);
+            background: var(--fundo);
+            color: var(--texto);
+        }
+        .cabecalho {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 12px 12px;
+            border-bottom: 1px solid var(--borda);
+        }
+        .nome-igreja {
+            margin: 0 0 8px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--vermelho-icm);
+        }
+        h1 {
+            margin: 0 0 4px;
+            font-size: clamp(24px, 3vw, 30px);
+            font-weight: 600;
+            color: var(--azul-escuro);
+        }
+        #cronometro {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            color: var(--vermelho-icm);
+        }
+        .painel-central {
+            max-width: 920px;
+            margin: 20px auto;
+            border: 1px solid var(--borda);
+            border-top: 4px solid var(--vermelho-icm);
+            border-radius: 10px;
+            background: var(--branco);
+            box-shadow: 0 4px 18px rgba(25, 42, 61, 0.04);
+            overflow: hidden;
+        }
+        #tipo-conteudo {
+            margin: 0;
+            padding: 12px 20px;
+            background: var(--azul-escuro);
+            color: var(--branco);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .painel-corpo { position: relative; }
+        .seta-painel {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 48px;
+            padding: 0;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            background: var(--fundo);
+            color: var(--vermelho-icm);
+            font-size: 32px;
+            cursor: pointer;
+        }
+        #conteudo-anterior { left: 8px; }
+        #proximo-conteudo { right: 8px; }
+        .seta-painel:hover:not(:disabled) {
+            background: var(--vermelho-icm);
+            color: var(--branco);
+        }
+        .seta-painel:disabled { opacity: 0.35; cursor: default; }
+        #conteudo-central {
+            display: grid;
+            align-items: center;
+            min-height: 290px;
+            padding: 24px 64px;
+        }
+        .versiculo { margin: 0; }
+        .versiculo p {
+            margin: 0 0 18px;
+            font-size: clamp(20px, 2.5vw, 28px);
+            line-height: 1.5;
+            color: var(--azul-escuro);
+        }
+        .versiculo strong {
+            display: block;
+            color: var(--vermelho-icm);
+            font-size: 18px;
+        }
+        .versiculo small { display: block; margin-top: 6px; font-size: 12px; }
+        .noticia-link {
+            display: block;
+            text-align: left;
+            color: var(--azul-escuro);
+            text-decoration: none;
+        }
+        .noticia-com-imagem {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            align-items: center;
+            gap: 24px;
+        }
+        .noticia-imagem {
+            display: block;
+            width: 100%;
+            height: 230px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: var(--fundo);
+        }
+        .noticia-link time { color: var(--texto); font-size: 13px; }
+        .noticia-link h3 {
+            margin: 10px 0 18px;
+            font-size: clamp(18px, 2.2vw, 24px);
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+        }
+        .ler-noticia { color: var(--vermelho-icm); font-size: 14px; font-weight: 600; }
+        .noticia-link:hover h3 { color: var(--vermelho-icm); }
+        .painel-rodape {
+            padding: 12px 20px;
+            border-top: 1px solid var(--borda);
+            font-size: 12px;
+        }
+        #status-noticias { margin: 0 0 10px; line-height: 1.4; }
+        #atualizar-noticias {
+            padding: 6px 10px;
+            margin: 0 8px 6px 0;
+            border: 1px solid var(--vermelho-icm);
+            border-radius: 6px;
+            color: var(--branco);
+            background: var(--vermelho-icm);
+            cursor: pointer;
+            font: inherit;
+        }
+        #atualizar-noticias:hover:not(:disabled) { background: var(--vermelho-escuro); }
+        #atualizar-noticias:disabled { opacity: 0.6; cursor: wait; }
+        .painel-rodape a { color: var(--vermelho-icm); text-underline-offset: 3px; }
+        .painel-central a:focus-visible, .painel-central button:focus-visible {
+            outline: 3px solid var(--vermelho-icm);
+            outline-offset: 3px;
+        }
+        @media (max-width: 600px) {
+            #conteudo-central { padding: 18px 58px; }
+            #conteudo-anterior { left: 4px; }
+            #proximo-conteudo { right: 4px; }
+            .noticia-com-imagem { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+            .noticia-imagem { height: 180px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="cabecalho">
+        <p class="nome-igreja">Igreja Cristã Maranata</p>
+        <h1>Nosso culto começa em</h1>
+        <div id="cronometro">00:00:00</div>
+    </header>
+
+    <section class="painel-central" aria-labelledby="tipo-conteudo">
+        <h2 id="tipo-conteudo">Palavra de Deus</h2>
+        <div class="painel-corpo">
+            <button id="conteudo-anterior" class="seta-painel" type="button" aria-label="Conteúdo anterior" aria-controls="conteudo-central" title="Conteúdo anterior" disabled>‹</button>
+            <div id="conteudo-central" aria-live="polite" aria-atomic="true"></div>
+            <button id="proximo-conteudo" class="seta-painel" type="button" aria-label="Próximo conteúdo" aria-controls="conteudo-central" title="Próximo conteúdo">›</button>
+        </div>
+        <footer class="painel-rodape">
+            <p id="status-noticias" role="status">Carregando notícias…</p>
+            <button id="atualizar-noticias" type="button">Atualizar notícias</button>
+            <a href="https://www.igrejacristamaranata.org.br/" target="_blank" rel="noopener noreferrer">Site oficial ↗</a>
+        </footer>
+    </section>
+
+    <script src="versiculos.js"></script>
+    <script src="painel.js"></script>
+    <script>
+        function atualizarCronometro() {
+
+            // Horário atual
+            const agora = new Date();
+
+            // Define o horário de destino conforme o dia da semana.
+            const diaDaSemana = agora.getDay();
+            const destino = new Date(agora);
+
+            if (diaDaSemana === 0) {
+                // Domingo: após o culto das 10h, conta até o das 19h.
+                destino.setHours(10, 0, 0, 0);
+                if (agora > destino) {
+                    destino.setHours(19, 0, 0, 0);
+                }
+            } else if (diaDaSemana === 6) {
+                destino.setHours(19, 0, 0, 0);
+            } else {
+                destino.setHours(19, 30, 0, 0);
+            }
+
+            // Diferença em milissegundos
+            const diferenca = destino - agora;
+
+            if (diferenca <= 0) {
+                document.getElementById("cronometro").innerHTML =
+                    "Tempo encerrado!";
+                return;
+            }
+
+            // Converte a diferença
+            const horas = Math.floor(diferenca / (1000 * 60 * 60));
+
+            const minutos = Math.floor(
+                (diferenca % (1000 * 60 * 60)) / (1000 * 60)
+            );
+
+            const segundos = Math.floor(
+                (diferenca % (1000 * 60)) / 1000
+            );
+
+            // Exibe o resultado
+            document.getElementById("cronometro").innerHTML =
+                String(horas).padStart(2, '0') + ":" +
+                String(minutos).padStart(2, '0') + ":" +
+                String(segundos).padStart(2, '0');
+        }
+
+        // Atualiza a cada segundo
+        setInterval(atualizarCronometro, 1000);
+
+        // Executa imediatamente
+        atualizarCronometro();
+        </script>
+</body>
+</html>
