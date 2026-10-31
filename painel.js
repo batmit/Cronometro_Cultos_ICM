@@ -17,13 +17,14 @@ function atualizarMomentoDeOracao(ativo) {
     if (momentoDeOracao === ativo) return;
     momentoDeOracao = ativo;
     document.querySelector(".barra-titulo").hidden = ativo;
+    document.querySelector(".navegacao-conteudo").hidden = ativo;
     botaoAnterior.hidden = ativo;
     botaoProximo.hidden = ativo;
     if (ativo) {
         clearInterval(intervaloConteudo);
         const mensagem = document.createElement("p");
         mensagem.className = "mensagem-oracao";
-        mensagem.textContent = "Momento de Silêncio de de Oração";
+        mensagem.textContent = "Momento de oração e de silêncio";
         conteudoCentral.replaceChildren(mensagem);
     } else {
         if (posicaoHistorico >= 0) restaurarConteudo();
@@ -82,6 +83,19 @@ botaoAnterior.addEventListener("click", () => {
 botaoProximo.addEventListener("click", () => {
     avancarConteudo();
     reiniciarIntervalo();
+});
+
+document.addEventListener("keydown", evento => {
+    if (momentoDeOracao || evento.defaultPrevented || evento.altKey
+        || evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
+    if (evento.target instanceof Element && evento.target.closest(
+        "input, textarea, select, [contenteditable]:not([contenteditable='false']), [role='textbox']"
+    )) return;
+    const botao = evento.key === "ArrowLeft" ? botaoAnterior
+        : evento.key === "ArrowRight" ? botaoProximo : null;
+    if (!botao || botao.disabled) return;
+    evento.preventDefault();
+    botao.click();
 });
 
 function mostrarVersiculo() {
