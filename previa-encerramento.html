@@ -1,0 +1,261 @@
+<!doctype html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Prévia de encerramento</title><style>
+        :root {
+            --vermelho-icm: #bb1626;
+            --vermelho-escuro: #941220;
+            --azul-escuro: #192a3d;
+            --texto: #3a4f66;
+            --fundo: #fff5f5;
+            --borda: #ead7da;
+            --branco: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(24px, 4vh, 48px);
+            font-family: "Segoe UI", Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: clamp(24px, 4vh, 48px) 20px;
+            border-top: 4px solid var(--vermelho-icm);
+            background: #f7f8fa;
+            min-height: 100vh;
+            min-height: 100svh;
+            color: var(--texto);
+        }
+        .cabecalho {
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 12px;
+        }
+        .logo-igreja {
+            display: block;
+            width: 180px;
+            max-width: 60%;
+            height: auto;
+            margin: 0 auto clamp(24px, 4vh, 44px);
+        }
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(20px, 2.5vw, 30px);
+            font-weight: 400;
+            color: var(--azul-escuro);
+        }
+        #cronometro {
+            font-size: clamp(48px, 12vw, 150px);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+            letter-spacing: -0.035em;
+            color: var(--vermelho-icm);
+        }
+        .horario-culto {
+            margin: 14px 0 0;
+            font-size: clamp(16px, 1.8vw, 22px);
+            color: var(--texto);
+        }
+        .painel-central {
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            background: var(--branco);
+            overflow: hidden;
+        }
+        .barra-titulo {
+            margin: 0;
+            padding: 12px 20px;
+            background: var(--branco);
+            color: var(--texto);
+            font-size: 15px;
+            font-weight: 600;
+            overflow: hidden;
+        }
+        #tipo-conteudo {
+            display: block;
+            width: max-content;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .area-conteudo { width: 100%; max-width: 1040px; }
+        .navegacao-conteudo {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .seta-painel {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: 1px solid #d7dee6;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--texto);
+            font: inherit;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        .seta-painel:hover:not(:disabled),
+        .seta-painel:focus-visible {
+            border-color: var(--vermelho-icm);
+            color: var(--vermelho-icm);
+        }
+        .seta-painel:focus-visible {
+            outline: 2px solid var(--vermelho-icm);
+            outline-offset: 3px;
+        }
+        .seta-painel:disabled { opacity: 0.35; cursor: default; }
+        #conteudo-central {
+            display: grid;
+            align-items: center;
+            min-height: 260px;
+            height: clamp(260px, 32vh, 340px);
+            overflow-y: auto;
+            padding: 24px 40px;
+        }
+        .versiculo { margin: 0; }
+        .mensagem-oracao {
+            margin: 0;
+            font-size: clamp(22px, 2.8vw, 34px);
+            line-height: 1.4;
+            color: var(--azul-escuro);
+        }
+        .versiculo p {
+            margin: 0 0 18px;
+            font-size: clamp(22px, 2.8vw, 34px);
+            line-height: 1.4;
+            overflow-wrap: break-word;
+            color: var(--azul-escuro);
+        }
+        .versiculo strong {
+            display: block;
+            color: var(--vermelho-icm);
+            font-size: 18px;
+        }
+        .noticia-link {
+            display: block;
+            text-align: left;
+            color: var(--azul-escuro);
+            text-decoration: none;
+        }
+        .noticia-com-imagem {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            align-items: center;
+            gap: 24px;
+        }
+        .noticia-imagem {
+            display: block;
+            width: 100%;
+            height: 210px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: var(--fundo);
+        }
+        .noticia-link time { color: var(--texto); font-size: 13px; }
+        .noticia-link h3 {
+            margin: 10px 0 18px;
+            font-size: clamp(18px, 2.2vw, 24px);
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+        }
+        .ler-noticia { color: var(--vermelho-icm); font-size: 14px; font-weight: 600; }
+        .noticia-link:hover h3 { color: var(--vermelho-icm); }
+        .painel-central a:focus-visible, .painel-central button:focus-visible {
+            outline: 3px solid var(--vermelho-icm);
+            outline-offset: 3px;
+        }
+        .mensagem-reverencia {
+            margin: clamp(40px, 7vh, 72px) 0 0;
+            font-size: clamp(22px, 2.4vw, 34px);
+            font-weight: 400;
+            color: var(--texto);
+        }
+        body.em-reverencia { border-top-color: transparent; }
+        body.em-encerramento {
+            border-top-color: transparent;
+            padding: 24px 20px 32px;
+        }
+        .em-encerramento .cabecalho,
+        .em-encerramento .area-conteudo { display: none; }
+        .tela-encerramento {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            min-height: calc(100svh - 60px);
+        }
+        .despedida-central {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 0;
+        }
+        .tela-encerramento h2 {
+            margin: 0 0 40px;
+            color: var(--azul-escuro);
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        .logo-encerramento {
+            display: block;
+            width: min(320px, 65vw);
+            height: auto;
+            margin: 0 auto;
+        }
+        .encerrar-culto {
+            width: min(320px, 100%);
+            margin: 32px auto 0;
+            color: var(--texto);
+            font-size: 14px;
+        }
+        .encerrar-culto label { display: block; margin-bottom: 12px; }
+        .encerrar-culto input {
+            display: block;
+            width: 100%;
+            height: 36px;
+            accent-color: var(--vermelho-icm);
+            cursor: pointer;
+        }
+        .encerrar-culto input:focus-visible {
+            outline: 2px solid var(--vermelho-icm);
+            outline-offset: 4px;
+        }
+        .em-reverencia .logo-igreja {
+            width: min(720px, 75vw);
+            max-width: 100%;
+            margin-bottom: 0;
+        }
+        .em-reverencia h1,
+        .em-reverencia #cronometro,
+        .em-reverencia .horario-culto,
+        .em-reverencia .area-conteudo { display: none; }
+        [hidden] { display: none !important; }
+        @media (max-width: 600px) {
+            body { padding: 24px 12px; }
+            .cabecalho { padding: 0; }
+            #conteudo-central { height: auto; min-height: 260px; }
+
+            #conteudo-central { padding: 18px 24px; }
+            .noticia-com-imagem { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+            .noticia-imagem { height: 180px; }
+        }
+    </style></head><body class="em-encerramento"><section id="tela-encerramento" class="tela-encerramento" aria-labelledby="titulo-encerramento">
+        <div class="despedida-central">
+            <h2 id="titulo-encerramento">Foi um prazer te receber!</h2>
+            <blockquote class="versiculo">
+                <p>E cada um foi para sua casa.</p>
+                <footer><strong>João 7:53</strong></footer>
+            </blockquote>
+        </div>
+        <img class="logo-encerramento" src="https://www.igrejacristamaranata.org.br/wp-content/uploads/2024/06/logo-icm.svg" alt="Igreja Cristã Maranata">
+    </section></body></html>

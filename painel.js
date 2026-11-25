@@ -184,20 +184,43 @@ function urlOficial(endereco) {
     }
 }
 
+async function buscarRecurso(url, imagem = false) {
+    if (window.desktopICM) {
+        const resultado = await window.desktopICM.buscar(url);
+        return imagem ? resultado.imagem : resultado.json;
+    }
+    const resposta = await fetch(url, { signal: AbortSignal.timeout(15000), credentials: "omit", cache: "no-store" });
+    if (!resposta.ok) throw new Error("Recurso indisponível");
+    if (!imagem) return resposta.json();
+    const blob = await resposta.blob();
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(blob.type) || blob.size > 6 * 1024 * 1024) throw new Error("Imagem inválida");
+    return new Promise((resolve, reject) => {
+        const leitor = new FileReader();
+        leitor.onload = () => resolve(leitor.result);
+        leitor.onerror = () => reject(leitor.error);
+        leitor.readAsDataURL(blob);
+    });
+}
+
+function validarNoticiasSalvas(lista) {
+    return Array.isArray(lista) ? lista.slice(0, 3).filter(noticia =>
+        noticia && urlOficial(noticia.link) && typeof noticia.titulo === "string" && noticia.titulo.trim()
+        && typeof noticia.data === "string" && !Number.isNaN(new Date(noticia.data).getTime())
+    ).map(noticia => ({ ...noticia,
+        imagem: typeof noticia.imagem === "string" && /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(noticia.imagem) ? noticia.imagem : null
+    })) : [];
+}
+
 async function carregarNoticias() {
     if (carregandoNoticias) return;
     carregandoNoticias = true;
-    const controlador = new AbortController();
-    const limite = setTimeout(() => controlador.abort(), 15000);
     try {
-        const resposta = await fetch(
-            "https://www.igrejacristamaranata.org.br/wp-json/wp/v2/posts?per_page=3&orderby=date&order=desc&_embed=wp:featuredmedia&_fields=date,link,title,_links,_embedded",
-            { signal: controlador.signal, credentials: "omit" }
+        const dados = await buscarRecurso(
+            "https://www.igrejacristamaranata.org.br/wp-json/wp/v2/posts?per_page=3&orderby=date&order=desc&_embed=wp:featuredmedia&_fields=date,link,title,_links,_embedded"
         );
-        if (!resposta.ok) throw new Error("Notícias indisponíveis");
-        const dados = await resposta.json();
         if (!Array.isArray(dados)) throw new Error("Resposta inválida");
-        noticias = dados.slice(0, 3).flatMap(noticia => {
+        const novas = dados.slice(0, 3).flatMap(noticia => {
+            if (!noticia || typeof noticia !== "object") return [];
             const link = urlOficial(noticia.link);
             const titulo = new DOMParser().parseFromString(
                 noticia.title?.rendered || "", "text/html"
@@ -211,15 +234,33 @@ async function carregarNoticias() {
                 descricaoImagem: midia?.alt_text || ""
             }];
         });
+        if (!novas.length) throw new Error("Sem notícias válidas");
+        await Promise.all(novas.map(async noticia => {
+            const anterior = noticias.find(item => item.link === noticia.link);
+            if (!noticia.imagem) return;
+            try { noticia.imagem = await buscarRecurso(noticia.imagem, true); }
+            catch { noticia.imagem = anterior?.imagem || null; }
+        }));
+        noticias = novas;
+        try {
+            await window.cacheNoticias.salvar({ versao: 1, atualizadoEm: new Date().toISOString(), noticias });
+        } catch (erro) { console.warn("Não foi possível salvar as notícias para uso offline.", erro); }
     } catch {
         // Mantém as notícias anteriores; sem elas, o painel continua com os versículos.
     } finally {
-        clearTimeout(limite);
         carregandoNoticias = false;
     }
 }
 
+async function iniciarNoticias() {
+    try {
+        const salvas = await window.cacheNoticias.ler();
+        if (salvas?.versao === 1) noticias = validarNoticiasSalvas(salvas.noticias);
+    } catch { /* Sem cache disponível, os versículos continuam funcionando. */ }
+    window.addEventListener("online", carregarNoticias);
+    carregarNoticias();
+    setInterval(carregarNoticias, 15 * 60 * 1000);
+}
 avancarConteudo();
-carregarNoticias();
 reiniciarIntervalo();
-setInterval(carregarNoticias, 15 * 60 * 1000);
+iniciarNoticias();

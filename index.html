@@ -2,9 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.igrejacristamaranata.org.br; connect-src https://www.igrejacristamaranata.org.br; object-src 'none'; base-uri 'none'; frame-src 'none'">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cronômetro para Culto ICM</title>
-    <link rel="icon" type="image/svg+xml" href="https://www.igrejacristamaranata.org.br/wp-content/uploads/2024/06/logo-icm.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-icm.svg">
     <style>
         :root {
             --vermelho-icm: #bb1626;
@@ -186,6 +187,57 @@
             color: var(--texto);
         }
         body.em-reverencia { border-top-color: transparent; }
+        body.em-encerramento {
+            border-top-color: transparent;
+            padding: 24px 20px 32px;
+        }
+        .em-encerramento .cabecalho,
+        .em-encerramento .area-conteudo { display: none; }
+        .tela-encerramento {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            min-height: calc(100svh - 60px);
+        }
+        .despedida-central {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 0;
+        }
+        .tela-encerramento h2 {
+            margin: 0 0 40px;
+            color: var(--azul-escuro);
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        .logo-encerramento {
+            display: block;
+            width: min(320px, 65vw);
+            height: auto;
+            margin: 0 auto;
+        }
+        .encerrar-culto {
+            width: min(320px, 100%);
+            margin: 32px auto 0;
+            color: var(--texto);
+            font-size: 14px;
+        }
+        .encerrar-culto label { display: block; margin-bottom: 12px; }
+        .encerrar-culto input {
+            display: block;
+            width: 100%;
+            height: 36px;
+            accent-color: var(--vermelho-icm);
+            cursor: pointer;
+        }
+        .encerrar-culto input:focus-visible {
+            outline: 2px solid var(--vermelho-icm);
+            outline-offset: 4px;
+        }
         .em-reverencia .logo-igreja {
             width: min(720px, 75vw);
             max-width: 100%;
@@ -209,11 +261,15 @@
 </head>
 <body>
     <header class="cabecalho">
-        <img class="logo-igreja" src="https://www.igrejacristamaranata.org.br/wp-content/uploads/2024/06/logo-icm.svg" alt="Igreja Cristã Maranata">
+        <img class="logo-igreja" src="assets/logo-icm.svg" alt="Igreja Cristã Maranata">
         <h1>Nosso culto começa em</h1>
         <div id="cronometro" role="timer" aria-label="Tempo para o início do culto">00:00:00</div>
         <p id="horario-culto" class="horario-culto"></p>
         <p id="mensagem-reverencia" class="mensagem-reverencia" hidden>Momento de reverência</p>
+        <div id="encerrar-culto" class="encerrar-culto" hidden>
+            <label for="culto-encerrado">Deslize para a direita ao encerrar o culto</label>
+            <input id="culto-encerrado" type="range" min="0" max="100" value="0" aria-label="Encerrar culto" aria-valuetext="Deslize até o final para confirmar o encerramento">
+        </div>
     </header>
 
     <div class="area-conteudo">
@@ -227,23 +283,57 @@
         </nav>
     </div>
 
+    <section id="tela-encerramento" class="tela-encerramento" aria-labelledby="titulo-encerramento" hidden>
+        <div class="despedida-central">
+            <h2 id="titulo-encerramento">Foi um prazer te receber!</h2>
+            <blockquote class="versiculo">
+                <p>E cada um foi para sua casa.</p>
+                <footer><strong>João 7:53</strong></footer>
+            </blockquote>
+        </div>
+        <img class="logo-encerramento" src="assets/logo-icm.svg" alt="Igreja Cristã Maranata">
+    </section>
+
     <script src="versiculos.js"></script>
+    <script src="noticias-cache.js"></script>
     <script src="painel.js"></script>
     <script>
-        const duracaoReverencia = 60 * 60 * 1000;
+        const duracaoReverencia = 2 * 60 * 60 * 1000;
         const antecedenciaOracao = 5 * 60 * 1000;
+        const controleEncerramento = document.getElementById("culto-encerrado");
+        let cultoEncerrado = null;
+        try {
+            cultoEncerrado = Number(localStorage.getItem("cultoEncerrado")) || null;
+        } catch { /* O controle também funciona sem armazenamento local. */ }
+
+        controleEncerramento.addEventListener("change", () => {
+            if (Number(controleEncerramento.value) === 100) {
+                const agora = new Date();
+                const destino = obterDestino(agora);
+                if (destino && agora >= destino) {
+                    cultoEncerrado = destino.getTime();
+                    try {
+                        localStorage.setItem("cultoEncerrado", String(cultoEncerrado));
+                    } catch { /* Mantém o encerramento nesta sessão. */ }
+                    atualizarCronometro();
+                }
+            }
+            controleEncerramento.value = "0";
+        });
 
         function obterDestino(agora) {
             // Inclui o dia anterior para preservar a reverência ao atravessar a meia-noite.
-            for (let deslocamento = -1; deslocamento <= 1; deslocamento++) {
+            for (let deslocamento = -1; deslocamento <= 2; deslocamento++) {
                 const dia = new Date(agora);
                 dia.setDate(dia.getDate() + deslocamento);
+                if (dia.getDay() === 5) continue;
                 const horarios = dia.getDay() === 0 ? [[10, 0], [19, 0]]
                     : dia.getDay() === 6 ? [[19, 0]] : [[19, 30]];
                 for (const [hora, minuto] of horarios) {
                     const destino = new Date(dia);
                     destino.setHours(hora, minuto, 0, 0);
-                    if (agora.getTime() < destino.getTime() + duracaoReverencia) {
+                    if (destino.getTime() !== cultoEncerrado
+                        && agora.getTime() < destino.getTime() + duracaoReverencia) {
                         return destino;
                     }
                 }
@@ -260,10 +350,18 @@
 
             // Diferença em milissegundos
             const diferenca = destino - agora;
+            // A despedida permanece até o momento de oração do próximo culto.
+            const emEncerramento = cultoEncerrado !== null
+                && agora.getTime() >= cultoEncerrado
+                && destino.getTime() === obterDestino(new Date(cultoEncerrado + duracaoReverencia)).getTime()
+                && diferenca > antecedenciaOracao;
+            document.body.classList.toggle("em-encerramento", emEncerramento);
+            document.getElementById("tela-encerramento").hidden = !emEncerramento;
             const emReverencia = diferenca <= 0;
             document.body.classList.toggle("em-reverencia", emReverencia);
             document.getElementById("mensagem-reverencia").hidden = !emReverencia;
-            atualizarMomentoDeOracao(diferenca <= antecedenciaOracao);
+            document.getElementById("encerrar-culto").hidden = !emReverencia;
+            atualizarMomentoDeOracao(emEncerramento || diferenca <= antecedenciaOracao);
 
             if (diferenca <= 0) {
                 document.getElementById("cronometro").textContent = "00:00:00";
